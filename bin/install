@@ -1,0 +1,85 @@
+#!/bin/bash
+###############################################################################
+# File         : install.sh
+# Description  : 
+#
+# Author       : BPI
+# Version      : 0.0.1
+# Requires Env :
+#                
+# Produces Env : 
+#
+###############################################################################
+
+SCRIPT=`readlink -f $0`
+SCRIPT_PATH=`dirname $SCRIPT`
+
+SCRIPTS_HOME="$SCRIPT_PATH/.."
+
+. ${SCRIPTS_HOME}/config/env.sh
+. ${SCRIPTS_HOME}/lib/shell/utils.sh
+
+
+###############################################################################
+#
+#
+#
+###############################################################################
+
+if [ $# -eq 1 ]; then 
+   export STAGING_DIRECTORY=$1
+fi
+
+echo
+echo "*** Starting Installation ***"
+echo
+echo "Executing at ${SCRIPTS_HOME}"
+echo
+
+TEMPORARY_DIRECTORY=${SCRIPTS_HOME}/tmp
+export TEMPORARY_DIRECTORY
+
+rm -rf ${TEMPORARY_DIRECTORY}   
+echo "Creating temporary directory ${TEMPORARY_DIRECTORY}"
+mkdir -p ${TEMPORARY_DIRECTORY}
+
+${SCRIPTS_HOME}/functions/preCheck.sh
+ok_to_continue=$?
+if [ $ok_to_continue -neq 0 ]; then
+    echo "Aborting!!!"
+fi
+
+create_central_inventory
+${SCRIPTS_HOME}/functions/installJDK.sh
+echo $JDK_HOME
+
+if [ "${INSTALL_TYPE}" == "WLS" ] ; then
+    . ${SCRIPTS_HOME}/functions/installWLS.sh
+elif [ "${INSTALL_TYPE}" == "OHS" ] ; then
+    . ${SCRIPTS_HOME}/functions/installOHS.sh
+else
+    echo "Invalid Installation Type ${INSTALL_TYPE}"
+    exit 1   
+   
+fi
+
+# check for existing patches to apply
+if [ -d ${STAGING_DIRECTORY}/patch/${INSTALL_TYPE} ] ; then
+    for patchFile in `ls ${STAGING_DIRECTORY}/patch/${INSTALL_TYPE}`; do
+        echo "Applying patch $patchFile"
+        cd /tmp
+        unzip ${STAGING_DIRECTORY}/patch/${INSTALL_TYPE}/$patchFile
+        patch_directory=$(echo $patchFile | cut -d'_' -f1 | cut -c2-)
+        cd /tmp/$patch_directory
+        export ORACLE_HOME=${MIDDLEWARE_HOME}
+        $ORACLE_HOME/OPatch/opatch apply -silent -verbose
+
+        rm -rf /tmp/$patch_directory
+    done
+fi   
+
+###############################################################################
+#
+#
+#
+###############################################################################
