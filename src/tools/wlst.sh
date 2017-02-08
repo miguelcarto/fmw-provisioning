@@ -9,6 +9,7 @@ TOOLS_PATH=$(dirname $0)
 # In order to add you custom WLST scripts to the PATH
 # just add them to the CLASSPATH
 WLST_PATH=$TOOLS_PATH/../wlst
+export WLST_LIB=$WLST_PATH
 
 propertiesFile=$1
 shift

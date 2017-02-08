@@ -1,8 +1,8 @@
 import sys
 
-sys.path.append( os.getenv('WLST_LIB'))
+sys.path.append(os.getenv('WLST_LIB'))
 
-from geos import utils
+from fmw import utils
 
 # Read environment variables 
 bbShortName = os.getenv('FUNCTIONAL_BLOCK_NAME') + '_' + os.getenv('BUILDING_BLOCK_NAME')
@@ -191,12 +191,6 @@ cmo.setNodeManagerUsername(nodeManagerUsername);
 nodeManagerPassword = utils.getpassword('NM_ADMIN')
 cmo.setNodeManagerPasswordEncrypted(nodeManagerPassword)
 
-
-# Realm Setup
-print "Setup LDAP Realm"
-cd('/SecurityConfiguration/'+ domainName +'/Realms/myrealm');
-cd('AuthenticationProviders/DefaultAuthenticator');
-set('ControlFlag', 'SUFFICIENT');
 
 # Enable Admin Port
 print "Setup Admin Port"

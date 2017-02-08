@@ -1,11 +1,11 @@
 #!/bin/bash
 ###############################################################################
-# File         : install.sh
+# File         : install
 # Description  : 
 #
-# Author       : BPI
+# Author       : mcarto
 # Version      : 0.0.1
-# Requires Env :
+# Requires Env : SOFTWARE_DIRECTORY
 #                
 # Produces Env : 
 #
@@ -18,6 +18,7 @@ SCRIPTS_HOME="$SCRIPT_PATH/.."
 
 . ${SCRIPTS_HOME}/config/env.sh
 . ${SCRIPTS_HOME}/lib/shell/utils.sh
+. ${SCRIPTS_HOME}/lib/shell/fmw.sh
 
 
 ###############################################################################
@@ -27,7 +28,7 @@ SCRIPTS_HOME="$SCRIPT_PATH/.."
 ###############################################################################
 
 if [ $# -eq 1 ]; then 
-   export STAGING_DIRECTORY=$1
+   export SOFTWARE_DIRECTORY=$1
 fi
 
 echo
@@ -43,20 +44,18 @@ rm -rf ${TEMPORARY_DIRECTORY}
 echo "Creating temporary directory ${TEMPORARY_DIRECTORY}"
 mkdir -p ${TEMPORARY_DIRECTORY}
 
-${SCRIPTS_HOME}/functions/preCheck.sh
+validate_environment
 ok_to_continue=$?
-if [ $ok_to_continue -neq 0 ]; then
+if [ $ok_to_continue -ne 0 ]; then
     echo "Aborting!!!"
 fi
 
 create_central_inventory
-${SCRIPTS_HOME}/functions/installJDK.sh
-echo $JDK_HOME
+. ${SCRIPTS_HOME}/lib/shell/installJDK.sh
 
+echo "JDK available in ${JDK_HOME}"
 if [ "${INSTALL_TYPE}" == "WLS" ] ; then
-    . ${SCRIPTS_HOME}/functions/installWLS.sh
-elif [ "${INSTALL_TYPE}" == "OHS" ] ; then
-    . ${SCRIPTS_HOME}/functions/installOHS.sh
+    . ${SCRIPTS_HOME}/lib/shell/installWLS.sh
 else
     echo "Invalid Installation Type ${INSTALL_TYPE}"
     exit 1   
@@ -64,11 +63,11 @@ else
 fi
 
 # check for existing patches to apply
-if [ -d ${STAGING_DIRECTORY}/patch/${INSTALL_TYPE} ] ; then
-    for patchFile in `ls ${STAGING_DIRECTORY}/patch/${INSTALL_TYPE}`; do
+if [ -d ${SOFTWARE_DIRECTORY}/patch/${INSTALL_TYPE} ] ; then
+    for patchFile in `ls ${SOFTWARE_DIRECTORY}/patch/${INSTALL_TYPE}`; do
         echo "Applying patch $patchFile"
         cd /tmp
-        unzip ${STAGING_DIRECTORY}/patch/${INSTALL_TYPE}/$patchFile
+        unzip ${SOFTWARE_DIRECTORY}/patch/${INSTALL_TYPE}/$patchFile
         patch_directory=$(echo $patchFile | cut -d'_' -f1 | cut -c2-)
         cd /tmp/$patch_directory
         export ORACLE_HOME=${MIDDLEWARE_HOME}

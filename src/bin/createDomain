@@ -1,0 +1,74 @@
+#!/bin/bash
+###############################################################################
+# File         : createDomain
+# Description  : 
+#
+# Author       : mcarto
+# Version      : 0.0.1
+# Requires Env :
+#                
+# Produces Env : 
+#
+###############################################################################
+
+SCRIPT_PATH=`dirname $(readlink -f $0)`
+SCRIPT_NAME=`basename $0`
+SCRIPTS_HOME="$SCRIPT_PATH/.."
+
+SCRIPTS_TMP=${SCRIPTS_HOME}/tmp
+export SCRIPTS_TMP
+export TEMPLATES_HOME=$SCRIPTS_HOME/templates
+
+. $SCRIPTS_HOME/config/env.sh
+. $SCRIPTS_HOME/lib/shell/utils.sh
+. $SCRIPTS_HOME/lib/shell/fmw.sh
+
+
+###############################################################################
+#
+#
+#
+###############################################################################
+
+function create_domain() {
+   
+   $SCRIPTS_HOME/tools/wlst.sh $SCRIPTS_HOME/config/environment.properties $SCRIPTS_HOME/wlst/createDomain.py
+   
+   if [ $? -ne 0 ]; then
+      echo "Domain creation failed. Check log for more info."
+      exit 2
+      
+   fi
+   
+   # setup custom properties
+   DOMAIN_CONFIGURATION_HOME="${MIDDLEWARE_HOME}/../cfg/aserver/domains/${TARGET_ENVIRONMENT}_${FUNCTIONAL_BLOCK_NAME}_${BUILDING_BLOCK_NAME}"
+   setup_custom_environment
+
+   
+}
+
+
+
+###############################################################################
+#
+#
+#
+###############################################################################
+
+if [ ! -d ${SCRIPTS_TMP} ]; then
+   mkdir -p ${SCRIPTS_TMP}
+fi
+
+if [ ! -d ${MIDDLEWARE_HOME}/../cfg ]; then
+      create_domain
+else
+   echo "Domain already created skipping..."
+fi
+
+###############################################################################
+#
+#
+#
+###############################################################################
+
+

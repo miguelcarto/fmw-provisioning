@@ -1,0 +1,34 @@
+#!/bin/sh
+###############################################################################
+# File         : setup
+# Description  : 
+#
+# Requires Env :
+#                
+# Produces Env : 
+#
+###############################################################################
+
+SCRIPT_NAME=$0
+SCRIPT_PATH=`dirname $SCRIPT_NAME`
+
+SCRIPTS_HOME="$SCRIPT_PATH/.."
+
+###############################################################################
+#
+#
+#
+###############################################################################
+
+rm -rf "${SCRIPTS_HOME}/provisioning"
+mkdir ${SCRIPTS_HOME}/provisioning && cp -r $SCRIPTS_HOME/src/* ${SCRIPTS_HOME}/provisioning
+cp -r $SCRIPTS_HOME/config/wls01 ${SCRIPTS_HOME}/provisioning/config
+cd $SCRIPTS_HOME/vagrant 
+
+# destroy if running
+vagrant_running=$(vagrant status | grep running)
+if [ ! -z "$vagrant_running" ]; then
+    vagrant destroy -f
+fi 
+vagrant up
+
